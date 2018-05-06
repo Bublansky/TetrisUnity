@@ -118,7 +118,7 @@ public class Group : MonoBehaviour {
         for (int y = 0; y < Grid.h; ++y)
             for (int x = 0; x < Grid.w; ++x)
                 if (Grid.grid[x, y] != null)
-                    if (Grid.grid[x, y].parent == transform)
+                    if (Grid.grid[x, y].parent == transform) //verifica se é a peça atual
                         Grid.grid[x, y] = null;
 
         // Add new children to grid
