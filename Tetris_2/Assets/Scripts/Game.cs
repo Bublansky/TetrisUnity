@@ -10,27 +10,59 @@ public class Game : MonoBehaviour {
 	public static int gridHeight = 22;
 	public GameObject[] Tetrominos;
 	public static Transform[,] grid = new Transform[gridWidth,gridHeight];
+
 	public int scoreOneLine = 40;
     public int scoreTwoLine = 100;
     public int scoreThreeLine = 300;
     public int scoreFourLine = 1200;
+
+	public int currentLevel = 0;
+	private int numLinesCleared = 0;
+
+	public float fallSpeed = 1.0f;
+
     private static int numberOfRowsThisTurn = 0;
     public static int currentScore = 0;
+	
+	private bool gameStarted = false;
+	
+    public Text hud_score;
+	public Text hud_level;
+	public Text hud_lines;
+
+	private AudioSource audioSource;
+	public AudioClip clearedLineSound;
+
 	private GameObject previewTetromino;
 	private GameObject nextTetromino;
-	private bool gameStarted = false;
-	private Vector2 previewTetrominoPosition = new Vector2(-6.5f,15f);
-    public Text hud_score;
+	private Vector3 previewTetrominoPosition = new Vector3(11f,16f,-6.5f);
 	// Use this for initialization
 	void Start () {
 		SpawnNextTetromino();
+		audioSource = GetComponent<AudioSource>();
 	}
 	
 	// Update is called once per frame
 	void Update () {
 		UpdateScore();
         UpdateUI();
+		UpdateLevel();
+		UpdateSpeed();
 	}
+	
+	void UpdateLevel(){
+		currentLevel = numLinesCleared / 10;
+	}
+
+	void UpdateSpeed(){
+		fallSpeed = 1.0f - ((float)currentLevel * 0.1f);
+	}
+
+	public void UpdateUI(){
+        hud_score.text = currentScore.ToString();
+		hud_level.text = currentLevel.ToString();
+		hud_lines.text = numLinesCleared.ToString();
+    }
 
 	public bool CheckAboveGrid(Tetrominos tetromino){
 		for(int x = 0; x < gridWidth; ++x){
@@ -143,6 +175,7 @@ public class Game : MonoBehaviour {
 	}
 
 	public bool CheckInsideGrid(Vector2 pos){
+		Debug.Log("Pos.x: " + (int)pos.x);
 		return ((int)pos.x >= 0 && (int)pos.x < gridWidth && (int)pos.y > 0);
 	}
 	
@@ -166,26 +199,31 @@ public class Game : MonoBehaviour {
                 ClearedFourLines();
             }
             numberOfRowsThisTurn = 0;
+			PlayLineClearSound();
         }
     }
 
     public void ClearedOneLine(){
-        currentScore += scoreOneLine;
+        currentScore += scoreOneLine + (currentLevel * 20);
+		numLinesCleared++;
     }
 
     public void ClearedTwoLines(){
-        currentScore += scoreTwoLine;
+        currentScore += scoreTwoLine + (currentLevel * 25);
+		numLinesCleared += 2;
     }
 
     public void ClearedThreeLines(){
-        currentScore += scoreThreeLine;
+        currentScore += scoreThreeLine + (currentLevel * 30);;
+		numLinesCleared += 3;
     }
 
     public void ClearedFourLines(){
-        currentScore += scoreFourLine;
+        currentScore += scoreFourLine + (currentLevel * 35);;
+		numLinesCleared += 4;
     }
 
-    public void UpdateUI(){
-        hud_score.text = currentScore.ToString();
-    }
+	public void PlayLineClearSound(){
+		audioSource.PlayOneShot(clearedLineSound);
+	}
 }
